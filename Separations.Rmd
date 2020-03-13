@@ -1,0 +1,91 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+testdata <- read.csv("cleanerangel.csv", header = TRUE, stringsAsFactors = FALSE)
+```
+
+
+```{r}
+#feature engineering: deriving a feature
+cleandata$GunType <- 0
+cleandata$killerelevation <- 0
+cleandata$victimelevation <- 0
+cleandata$killdistance <- 0
+
+mysample <- cleandata #[sample(1:nrow(cleandata), 30000,replace=FALSE),] 
+
+Rifle <- c("Groza", "M16A4", "Mk14", "SCAR-L", "M416", "Mini 14", "AKM", "AUG")
+MG <- c("M249", "DP-28")
+Sniper <- c("AWM", "Kar98k", "M24", "Crossbow", "SKS")
+Explosives <- c("Grenade", "death.ProjMolotov_C", "death.ProjMolotov_DamageField_C")
+Vehicles <- c("Boat", "Buggy", "Hit by Car", "Motorbike", "Motorbike (SideCar)", "Dacia", "Aquarail", "Uaz")
+SMG <- c("Micro UZI", "UMP9", "Tommy Gun", "Vector", "VSS")
+Melee <- c("Crowbar", "Machete", "Pan", "Sickle", "Punch", "death.WeapSawnoff_C")
+Pistols <- c("P18C", "P1911", "P92", "R1895", "R45")
+Shotgun <- c("S12K", "S1897", "S686")
+
+
+mysample <- within(mysample, GunType[killed_by %in% Rifle] <- ("Rifle"))
+mysample <- within(mysample, GunType[killed_by %in% MG] <- ("Machine Gun"))
+mysample <- within(mysample, GunType[killed_by %in% Sniper] <- ("Sniper"))
+mysample <- within(mysample, GunType[killed_by %in% Explosives] <- ("Explosives"))
+mysample <- within(mysample, GunType[killed_by %in% Vehicles] <- ("Vehicles"))
+mysample <- within(mysample, GunType[killed_by %in% Melee] <- ("Melee"))
+mysample <- within(mysample, GunType[killed_by %in% Shotgun] <- ("Shotgun"))
+mysample <- within(mysample, GunType[killed_by %in% Pistols] <- ("Pistol"))
+mysample <- within(mysample, GunType[killed_by %in% SMG] <- ("Sub Machine Gun"))
+
+
+
+mysample <- within(mysample, killerelevation[killer_position_x > 462500 & killer_position_x < 500000  & killer_position_y > 110000 & killer_position_x < 131500] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 337500 & killer_position_x < 581500  & killer_position_y > 187500 & killer_position_x < 237500] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 562500 & killer_position_x < 662500  & killer_position_y > 350000 & killer_position_x < 450000] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 181200 & killer_position_x < 262500  & killer_position_y > 450000 & killer_position_x < 525000] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 462500 & killer_position_x < 631500  & killer_position_y > 600000 & killer_position_x < 750000] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 100000 & killer_position_x < 150000  & killer_position_y > 650000 & killer_position_x < 700000] <- ("Elevated"))
+mysample <- within(mysample, killerelevation[killer_position_x > 875000 & killer_position_x < 250000  & killer_position_y > 225000 & killer_position_x < 381250] <- ("Elevated"))
+
+mysample <- within(mysample, killerelevation[killerelevation == 0] <- ("Normal"))
+
+mysample <- within(mysample, victimelevation[victim_position_x > 462500 & victim_position_x < 500000  & victim_position_y > 110000 & victim_position_x < 131500] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 337500 & victim_position_x < 581500  & victim_position_y > 187500 & victim_position_x < 237500] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 562500 & victim_position_x < 662500  & victim_position_y > 350000 & victim_position_x < 450000] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 181200 & victim_position_x < 262500  & victim_position_y > 450000 & victim_position_x < 525000] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 462500 & victim_position_x < 631500  & victim_position_y > 600000 & victim_position_x < 750000] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 100000 & victim_position_x < 150000  & victim_position_y > 650000 & victim_position_x < 700000] <- ("Elevated"))
+mysample <- within(mysample, victimelevation[victim_position_x > 875000 & victim_position_x < 250000  & victim_position_y > 225000 & victim_position_x < 381250] <- ("Elevated"))
+
+mysample <- within(mysample, victimelevation[victimelevation == 0] <- ("Normal"))
+
+mysample <- within(mysample, killdistance[killdistance == 0] <- sqrt(((killer_position_x - victim_position_x)^2) + ((killer_position_y - victim_position_y)^2)))
+
+```
+
+
+```{r}
+mysample$killed_by <- as.factor(mysample$killed_by)
+mysample$GunType <- as.factor(mysample$GunType)
+mysample$killerelevation <- as.factor(mysample$killerelevation)
+mysample$victimelevation <- as.factor(mysample$victimelevation)
+```
+
+```{r}
+
+mysample <- mysample[,-1]
+str(mysample)
+```
+
+```{r}
+filtering <- subset(mysample, GunType == "Rifle")
+
+filtering_100 <- filtering[sample(1:nrow(filtering), 100,replace=FALSE),]
+```
+
+```{r}
+write.csv(filtering_100, "Rifle.csv")
+```
+
